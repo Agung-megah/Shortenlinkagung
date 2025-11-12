@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shorten Link - Tanpa Masa Berlaku</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --danger: #f72585;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type="url"]:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .short-link {
+            font-weight: bold;
+            color: var(--primary);
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+        
+        .btn-copy {
+            background-color: var(--success);
+            margin-right: 10px;
+        }
+        
+        .btn-copy:hover {
+            background-color: #3aa8d0;
+        }
+        
+        .btn-delete {
+            background-color: var(--danger);
+        }
+        
+        .btn-delete:hover {
+            background-color: #d61a6c;
+        }
+        
+        .links-list {
+            margin-top: 30px;
+        }
+        
+        .links-list h2 {
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+        
+        .link-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .link-item:last-child {
+            border-bottom: none;
+        }
+        
+        .link-info {
+            flex: 1;
+        }
+        
+        .original-url {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .short-url {
+            font-weight: bold;
+            color: var(--primary);
+            word-break: break-all;
+        }
+        
+        .link-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .link-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .link-actions {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Shorten Link</h1>
+            <p class="subtitle">Pendekkan tautan Anda tanpa batas waktu</p>
+        </header>
+        
+        <main>
+            <div class="card">
+                <form id="shorten-form">
+                    <div class="form-group">
+                        <label for="url-input">Masukkan URL yang ingin dipendekkan:</label>
+                        <input type="url" id="url-input" placeholder="https://example.com/very-long-url" required>
+                    </div>
+                    <button type="submit" id="shorten-btn">Pendekkan URL</button>
+                </form>
+                
+                <div id="result" class="result">
+                    <p>URL pendek Anda:</p>
+                    <p id="short-link" class="short-link"></p>
+                    <div class="link-actions">
+                        <button id="copy-btn" class="btn-copy">Salin</button>
+                        <button id="delete-btn" class="btn-delete">Hapus</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card links-list">
+                <h2>Daftar Link Anda</h2>
+                <div id="links-container">
+                    <!-- Daftar link akan ditampilkan di sini -->
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2023 Shorten Link - Tautan Anda tersimpan selamanya di browser ini</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const shortenForm = document.getElementById('shorten-form');
+        const urlInput = document.getElementById('url-input');
+        const resultDiv = document.getElementById('result');
+        const shortLink = document.getElementById('short-link');
+        const copyBtn = document.getElementById('copy-btn');
+        const deleteBtn = document.getElementById('delete-btn');
+        const linksContainer = document.getElementById('links-container');
+        
+        // Generate random string for short URL
+        function generateShortCode(length = 6) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Save link to localStorage
+        function saveLink(originalUrl, shortCode) {
+            const links = getLinks();
+            const newLink = {
+                id: Date.now().toString(),
+                originalUrl,
+                shortCode,
+                createdAt: new Date().toISOString()
+            };
+            
+            links.push(newLink);
+            localStorage.setItem('shortenedLinks', JSON.stringify(links));
+            return newLink;
+        }
+        
+        // Get all links from localStorage
+        function getLinks() {
+            const links = localStorage.getItem('shortenedLinks');
+            return links ? JSON.parse(links) : [];
+        }
+        
+        // Delete link from localStorage
+        function deleteLink(id) {
+            const links = getLinks();
+            const updatedLinks = links.filter(link => link.id !== id);
+            localStorage.setItem('shortenedLinks', JSON.stringify(updatedLinks));
+            displayLinks();
+        }
+        
+        // Display all links
+        function displayLinks() {
+            const links = getLinks();
+            linksContainer.innerHTML = '';
+            
+            if (links.length === 0) {
+                linksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>Belum ada link yang dipendekkan. Mulai dengan memasukkan URL di atas.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by creation date (newest first)
+            links.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            links.forEach(link => {
+                const linkElement = document.createElement('div');
+                linkElement.className = 'link-item';
+                linkElement.innerHTML = `
+                    <div class="link-info">
+                        <div class="original-url">${link.originalUrl}</div>
+                        <div class="short-url">${window.location.origin}/${link.shortCode}</div>
+                    </div>
+                    <div class="link-actions">
+                        <button class="btn-copy" data-id="${link.id}">Salin</button>
+                        <button class="btn-delete" data-id="${link.id}">Hapus</button>
+                    </div>
+                `;
+                linksContainer.appendChild(linkElement);
+            });
+            
+            // Add event listeners for copy and delete buttons
+            document.querySelectorAll('.btn-copy').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const link = links.find(l => l.id === id);
+                    if (link) {
+                        copyToClipboard(`${window.location.origin}/${link.shortCode}`);
+                        showNotification('Link berhasil disalin!');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (confirm('Apakah Anda yakin ingin menghapus link ini?')) {
+                        deleteLink(id);
+                        showNotification('Link berhasil dihapus!');
+                    }
+                });
+            });
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                console.log('Text copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            });
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: var(--success);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+                z-index: 1000;
+                transition: opacity 0.3s;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Event Listeners
+        shortenForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const originalUrl = urlInput.value.trim();
+            if (!originalUrl) return;
+            
+            // Generate short code
+            let shortCode;
+            let isUnique = false;
+            const links = getLinks();
+            
+            // Ensure short code is unique
+            while (!isUnique) {
+                shortCode = generateShortCode();
+                isUnique = !links.some(link => link.shortCode === shortCode);
+            }
+            
+            // Save the link
+            const newLink = saveLink(originalUrl, shortCode);
+            
+            // Display result
+            shortLink.textContent = `${window.location.origin}/${shortCode}`;
+            resultDiv.classList.add('show');
+            
+            // Reset form
+            urlInput.value = '';
+            
+            // Update links list
+            displayLinks();
+            
+            showNotification('Link berhasil dipendekkan!');
+        });
+        
+        copyBtn.addEventListener('click', function() {
+            copyToClipboard(shortLink.textContent);
+            showNotification('Link berhasil disalin!');
+        });
+        
+        deleteBtn.addEventListener('click', function() {
+            const shortCode = shortLink.textContent.split('/').pop();
+            const links = getLinks();
+            const linkToDelete = links.find(link => link.shortCode === shortCode);
+            
+            if (linkToDelete && confirm('Apakah Anda yakin ingin menghapus link ini?')) {
+                deleteLink(linkToDelete.id);
+                resultDiv.classList.remove('show');
+                showNotification('Link berhasil dihapus!');
+            }
+        });
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            displayLinks();
+            
+            // Check if there's a hash in the URL (for redirecting)
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                const links = getLinks();
+                const link = links.find(l => l.shortCode === hash);
+                if (link) {
+                    window.location.href = link.originalUrl;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
